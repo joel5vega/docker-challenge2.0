@@ -2,15 +2,55 @@
 
 # - Create a Docker compose file that will have 4 services: nginx proxy, red, yellow and green app
 # - All services should be on the same _external_ network
+networks:
+  traffic-light:
+    external: true
 # - Only the nginx proxy should have an exposed port 80
 # - All apps (except the proxy) should have a named volume mounted
+volumes:
+  red-data:
+  yellow-data:
+  green-data:
 # - All apps (except proxy) should be built when we run _docker compose up_
 # - Nginx proxy should build the image from the nginx directory
 # - All the other apps have their own set of instructions in each directory
 # - Good luck!
 
+      
 services:
-  nginx:
-  red:
-  yellow:
-  green:
+  nginx-load-balancer:
+    container_name: nginx-load-balancer
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - traffic-light
+  red-app:
+    container_name: red-app
+    build:
+      context: ./red
+      dockerfile: Dockerfile
+    volumes:
+      - red-data:/app
+    networks:
+      - traffic-light
+  yellow-app:
+    container_name: yellow-app
+    build:
+      context: ./yellow
+      dockerfile: Dockerfile
+    volumes:
+      - yellow-data:/app
+    networks:
+      - traffic-light
+  green-app:
+    container_name: green-app
+    build:
+      context: ./green
+      dockerfile: Dockerfile
+    volumes:
+      - green-data:/app
+    networks:
+      - traffic-light
